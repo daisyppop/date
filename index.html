@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#070b1c">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);box-sizing:border-box}*,*::before,*::after{box-sizing:border-box}body{margin:0;font-size:14px;-webkit-text-size-adjust:100%}img{max-width:100%}[hidden]{display:none!important}</style>
+<title>바다에서 하늘까지</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Gowun+Batang:wght@700&family=Caveat:wght@500&display=swap">
+<style>
+/* Layout: 세로 스와이프 4장. 뒤에는 고정 레이어(흐린 해파리 → 선명한 해파리 → 와인잔 야경 → 와인빛 보케)가 스크롤에 맞춰 아래에서 번지며 교체, 글은 화면 아래쪽에 */
+:root{
+  color-scheme: dark;
+  --night:#070b1c;
+  --jelly:#9fb4ff;
+  --wine:#8a1d3a;
+  --rose:#f1b8c4;
+  --gold:#f0d29a;
+  --ink:#f6f4fb;
+  --ink-soft:rgba(246,244,251,.72);
+  --display:"Gowun Batang", serif;
+  --body:"Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --hand:"Caveat", cursive;
+}
+html,body{height:100%}
+body{background:var(--night);color:var(--ink);font-family:var(--body);overflow:hidden}
+.layers{position:fixed;inset:0;z-index:0;overflow:hidden;background:var(--night)}
+.layer{position:absolute;inset:0;transform-origin:50% 40%;will-change:transform,opacity,-webkit-mask-image}
+.layer img,.layer canvas{position:absolute;inset:0;width:100%;height:100%;display:block}
+.l0 canvas{filter:blur(9px) brightness(.6) saturate(1.15);transform:scale(1.15)}
+.deck{position:relative;z-index:1;height:100%;overflow-y:auto;scroll-snap-type:y mandatory;scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+.slide{position:relative;height:100%;min-height:560px;scroll-snap-align:start;scroll-snap-stop:always;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden}
+.slide::before{content:"";position:absolute;inset:auto 0 0;height:62%;background:linear-gradient(to top, rgba(7,11,28,.88) 0%, rgba(7,11,28,.45) 55%, transparent 100%);pointer-events:none}
+.s3::before,.s4::before{background:linear-gradient(to top, rgba(24,6,14,.9) 0%, rgba(24,6,14,.45) 55%, transparent 100%)}
+.s1{justify-content:center}
+.s1::before{inset:0;height:auto;background:radial-gradient(80% 50% at 50% 50%, rgba(7,11,28,.35), transparent 70%)}
+.copy{position:relative;z-index:2;display:flex;flex-direction:column;gap:12px;will-change:transform,opacity;
+  padding-left:max(28px, env(safe-area-inset-left,0px));padding-right:max(28px, env(safe-area-inset-right,0px));padding-block:24px calc(56px + env(safe-area-inset-bottom,0px))}
+.copy > *{max-width:30rem}
+.s1 .copy{align-items:center;text-align:center;padding-block:24px}
+.hand{font-family:var(--hand);font-size:1.5rem;line-height:1;color:var(--jelly)}
+.s3 .hand,.s4 .hand{color:var(--rose)}
+.time{font-size:.78rem;letter-spacing:.14em;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+h1,h2{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.25;letter-spacing:-.01em;text-shadow:0 2px 24px rgba(0,0,0,.35)}
+h1{font-size:clamp(2.5rem,11vw,3.4rem)}
+h2{font-size:clamp(1.9rem,8vw,2.4rem)}
+p{margin:0;color:var(--ink-soft);font-size:1.02rem;line-height:1.7}
+.hint{position:absolute;z-index:2;left:0;right:0;bottom:calc(26px + env(safe-area-inset-bottom,0px));text-align:center;font-size:.72rem;letter-spacing:.24em;color:var(--ink-soft)}
+.hint i{display:block;font-style:normal;margin-top:4px;animation:bob 2.2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(6px)}}
+.plan{list-style:none;margin:2px 0 0;padding:0;display:flex;flex-direction:column}
+.plan li{display:grid;grid-template-columns:3.6rem 1fr;gap:12px;padding:9px 0;border-top:1px solid rgba(246,244,251,.14);font-size:.95rem}
+.plan li:first-child{border-top:0}
+.plan time{font-variant-numeric:tabular-nums;color:var(--gold)}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:4px}
+button{font:inherit;font-size:1rem;border-radius:999px;padding:13px 24px;cursor:pointer;transition:transform .15s ease, background .2s ease}
+.yes{background:var(--ink);color:#2a0d18;border:1px solid var(--ink)}
+.maybe{background:rgba(246,244,251,.08);color:var(--ink);border:1px solid rgba(246,244,251,.35);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+button:active{transform:scale(.96)}
+button:focus-visible{outline:2px solid var(--rose);outline-offset:3px}
+.reply{font-family:var(--hand);font-size:1.6rem;color:var(--rose);min-height:1.5em}
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:6px 0 0;padding:14px 0 0;border-top:1px solid rgba(246,244,251,.16)}
+.facts div{min-width:0}
+.facts dt{font-family:var(--display);font-size:1.35rem;line-height:1.1;font-variant-numeric:tabular-nums;color:var(--ink)}
+.facts dd{margin:4px 0 0;font-size:.75rem;letter-spacing:.06em;color:var(--ink-soft)}
+.s2 .facts dt{color:var(--jelly)}
+.s3 .facts dt{color:var(--gold)}
+.small{font-size:.82rem;line-height:1.6;color:rgba(246,244,251,.55)}
+.dots{position:fixed;z-index:5;right:max(14px, calc(env(safe-area-inset-right,0px) + 10px));top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:6px}
+.dots i{width:5px;height:5px;border-radius:3px;background:rgba(246,244,251,.4);transition:height .3s, background .3s}
+.dots i.on{height:18px;background:var(--ink)}
+@media (prefers-reduced-motion:reduce){.deck{scroll-behavior:auto}.l1 img,.hint i{animation:none}}
+</style>
+</head>
+<body>
+<div class="layers" aria-hidden="true">
+  <div class="layer l0"><canvas id="jelly0"></canvas></div>
+  <div class="layer l1"><canvas id="jelly1"></canvas><canvas id="specks"></canvas></div>
+  <div class="layer l2"><canvas id="wine"></canvas></div>
+  <div class="layer l3"><canvas id="bokeh"></canvas></div>
+</div>
+
+<div class="dots" id="dots" aria-hidden="true"></div>
+
+<main class="deck" id="deck">
+  <section class="slide s1">
+    <div class="copy">
+      <div class="hand">plan</div>
+      <h1>잠실 코스</h1>
+      <p>잠실 아쿠아리움에서 시작해서<br>롯데월드타워 31층에서 마무리해요.</p>
+    </div>
+    <div class="hint">SWIPE<i>↓</i></div>
+  </section>
+
+  <section class="slide s2">
+    <div class="copy">
+      <div class="time">19:00 · 롯데월드몰 지하</div>
+      <h2>잠실 아쿠아리움</h2>
+      <p>강과 바다 두 테마로 나뉘어 있고, 수중터널과 해파리 수조가 볼거리예요. 천천히 돌면 1시간 반 정도 걸려요.</p>
+      <dl class="facts">
+        <div><dt>650+</dt><dd>종</dd></div>
+        <div><dt>55,000</dt><dd>마리</dd></div>
+        <div><dt>~21:00</dt><dd>운영</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="slide s3">
+    <div class="copy">
+      <div class="time">22:00 · 롯데월드타워 31층</div>
+      <h2>미드나잇145</h2>
+      <p>저녁 뷔페가 끝난 뒤 밤에만 여는 와인뷔페예요.<br>창밖으로 서울 야경이 한 바퀴 펼쳐져요.</p>
+      <dl class="facts">
+        <div><dt>8</dt><dd>와인 종류</dd></div>
+        <div><dt>22–01</dt><dd>영업</dd></div>
+        <div><dt>31F</dt><dd>야경</dd></div>
+      </dl>
+      <p class="small">레드 4 · 화이트 3 · 샴페인 1<br>치즈 · 햄 · 훈제연어 · 디저트는 자유롭게</p>
+    </div>
+  </section>
+
+  <section class="slide s4">
+    <div class="copy">
+      <div class="hand">summary</div>
+      <h2>일정 정리</h2>
+      <ul class="plan">
+        <li><time>19:00</time><span>잠실 아쿠아리움</span></li>
+        <li><time>20:30</time><span>석촌호수 산책</span></li>
+        <li><time>22:00</time><span>미드나잇145</span></li>
+      </ul>
+      <p class="small">타워 동문 1층 안내데스크에서 출입증 받고 C호기 엘리베이터로 31층</p>
+    </div>
+  </section>
+</main>
+
+<script>
+(function(){
+  const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const deck=document.getElementById('deck');
+  const slides=[...document.querySelectorAll('.slide')];
+  const layers=[...document.querySelectorAll('.layer')];
+  const copies=slides.map(s=>s.querySelector('.copy'));
+  const dots=document.getElementById('dots');
+  slides.forEach(()=>dots.appendChild(document.createElement('i')));
+
+  function rng(seed){return function(){seed=(seed*16807)%2147483647;return (seed-1)/2147483646;}}
+  function fit(c){const d=Math.min(2,devicePixelRatio||1),W=c.clientWidth,H=c.clientHeight;if(c.width!==Math.round(W*d)||c.height!==Math.round(H*d)){c.width=Math.round(W*d);c.height=Math.round(H*d);}const x=c.getContext('2d');x.setTransform(d,0,0,d,0,0);return [x,W,H];}
+
+  // 도시 불빛 보케 (와인바/마무리 공용)
+  function makeLights(seed,n,warm){const r=rng(seed);return Array.from({length:n},()=>({x:r(),y:r()*.75,s:6+r()*34,a:.15+r()*.4,p:r()*6.28,c:warm?(r()<.6?'240,190,120':'241,150,170'):(r()<.5?'240,200,140':'200,170,255')}));}
+  const wineLights=makeLights(7,46,false), endLights=makeLights(19,30,true);
+  function drawLights(x,W,H,L,t,scale){
+    for(const b of L){
+      const rad=b.s*scale, a=b.a*(.75+.25*Math.sin(t*.0008+b.p));
+      const g=x.createRadialGradient(b.x*W,b.y*H,0,b.x*W,b.y*H,rad);
+      g.addColorStop(0,`rgba(${b.c},${a})`);g.addColorStop(.6,`rgba(${b.c},${a*.45})`);g.addColorStop(1,`rgba(${b.c},0)`);
+      x.fillStyle=g;x.beginPath();x.arc(b.x*W,b.y*H,rad,0,6.28);x.fill();
+    }
+  }
+
+  function drawWine(t){
+    const [x,W,H]=fit(document.getElementById('wine'));
+    const bg=x.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#160a1e');bg.addColorStop(.55,'#2a0c1d');bg.addColorStop(1,'#12060c');
+    x.fillStyle=bg;x.fillRect(0,0,W,H);
+    drawLights(x,W,H,wineLights,t,1);
+    // 와인잔
+    const cx=W*.5, bw=Math.min(W*.32,150), bh=bw*1.12, y0=H*.16, stem=Math.min(H*.1,90);
+    const bowl=()=>{x.beginPath();x.moveTo(cx-bw/2,y0);x.bezierCurveTo(cx-bw/2,y0+bh*.62,cx-bw*.2,y0+bh,cx,y0+bh);x.bezierCurveTo(cx+bw*.2,y0+bh,cx+bw/2,y0+bh*.62,cx+bw/2,y0);};
+    // 바닥 붉은 반사광
+    const glow=x.createRadialGradient(cx,y0+bh*.8,0,cx,y0+bh*.8,bw*1.1);glow.addColorStop(0,'rgba(160,30,60,.35)');glow.addColorStop(1,'rgba(160,30,60,0)');
+    x.fillStyle=glow;x.fillRect(0,0,W,H);
+    // 와인
+    x.save();bowl();x.closePath();x.clip();
+    const sy=y0+bh*.5, amp=reduce?0:bw*.025, ph=t*.0015;
+    x.beginPath();x.moveTo(cx-bw,sy);
+    for(let i=0;i<=40;i++){const px=cx-bw/2+bw*i/40;x.lineTo(px,sy+Math.sin(ph+i*.22)*amp+Math.sin(ph*.6)*amp*(i/40-.5)*2);}
+    x.lineTo(cx+bw,H);x.lineTo(cx-bw,H);x.closePath();
+    const lg=x.createLinearGradient(0,sy,0,y0+bh);lg.addColorStop(0,'#9b1f3f');lg.addColorStop(.5,'#6a0f28');lg.addColorStop(1,'#3a0614');
+    x.fillStyle=lg;x.fill();
+    x.globalAlpha=.35;x.fillStyle='#f3a3b6';x.fillRect(cx-bw*.36,sy+bh*.06,bw*.08,bh*.25);x.globalAlpha=1;
+    x.restore();
+    // 유리
+    x.lineWidth=1.4;x.strokeStyle='rgba(255,240,244,.6)';bowl();x.stroke();
+    x.beginPath();x.ellipse(cx,y0,bw/2,bw*.06,0,0,6.28);x.strokeStyle='rgba(255,240,244,.45)';x.stroke();
+    x.beginPath();x.moveTo(cx-bw*.36,y0+bh*.08);x.quadraticCurveTo(cx-bw*.42,y0+bh*.42,cx-bw*.26,y0+bh*.72);x.strokeStyle='rgba(255,255,255,.35)';x.lineWidth=3;x.stroke();
+    x.lineWidth=1.4;x.strokeStyle='rgba(255,240,244,.55)';
+    x.beginPath();x.moveTo(cx-1.5,y0+bh);x.lineTo(cx-1.5,y0+bh+stem);x.moveTo(cx+1.5,y0+bh);x.lineTo(cx+1.5,y0+bh+stem);x.stroke();
+    x.beginPath();x.ellipse(cx,y0+bh+stem,bw*.32,bw*.05,0,0,6.28);x.stroke();
+  }
+  function drawBokeh(t){
+    const [x,W,H]=fit(document.getElementById('bokeh'));
+    const bg=x.createRadialGradient(W*.5,H*.35,0,W*.5,H*.35,Math.max(W,H));bg.addColorStop(0,'#5a1430');bg.addColorStop(.6,'#24081a');bg.addColorStop(1,'#12060c');
+    x.fillStyle=bg;x.fillRect(0,0,W,H);
+    drawLights(x,W,H,endLights,t,2.2);
+  }
+  // 해파리 (문 젤리): 숨 쉬듯 수축하며 위로 떠오름
+  const jr=rng(41);
+  const jellies=Array.from({length:15},()=>{const z=jr();return {x:jr(),y:jr(),z,r:16+z*z*62,ph:jr()*6.28,sp:.7+jr()*.6,tilt:(jr()-.5)*.5,v:.000012+(1-z)*.000006+jr()*.00001,nt:14+Math.floor(jr()*10),tl:1.5+jr()*.9};}).sort((a,b)=>a.z-b.z);
+  function jellyBg(x,W,H,t){
+    const bg=x.createLinearGradient(0,0,0,H);bg.addColorStop(0,'#16308f');bg.addColorStop(.45,'#0a1a5c');bg.addColorStop(1,'#030828');
+    x.fillStyle=bg;x.fillRect(0,0,W,H);
+    x.save();x.globalCompositeOperation='lighter';
+    for(let i=0;i<5;i++){
+      const sx=W*(.1+i*.22)+Math.sin(t*.0002+i*1.7)*W*.05, w=W*(.05+.04*((i*7)%3));
+      const g=x.createLinearGradient(0,0,0,H*.85);g.addColorStop(0,'rgba(140,170,255,.10)');g.addColorStop(1,'rgba(140,170,255,0)');
+      x.fillStyle=g;x.beginPath();x.moveTo(sx,0);x.lineTo(sx+w,0);x.lineTo(sx+w*2.2-W*.12,H*.85);x.lineTo(sx-W*.12,H*.85);x.closePath();x.fill();
+    }
+    x.restore();
+  }
+  function wave(x,fx,fy,len,amp,t,ph,segs){x.moveTo(fx,fy);for(let s=1;s<=segs;s++){const k=s/segs;x.lineTo(fx+Math.sin(t*.0018+ph+k*4)*amp*k,fy+len*k);}}
+  function drawJellyfish(x,j,W,H,t){
+    const unit=Math.min(W,H)/400, R=j.r*unit;
+    const span=H+R*6, y=((j.y*span-(reduce?0:t*j.v*span))%span+span)%span-R*3;
+    const pulse=Math.sin(t*.0016*j.sp+j.ph);
+    const w=R*(1+.09*pulse), h=R*.74*(1-.12*pulse), a=.35+.65*j.z;
+    x.save();x.translate(j.x*W+Math.sin(t*.0003+j.ph)*R*.4,y);x.rotate(j.tilt+Math.sin(t*.0005+j.ph)*.06);
+    // 촉수
+    x.lineWidth=Math.max(.5,.7*unit);x.strokeStyle=`rgba(185,200,255,${.22*a})`;x.beginPath();
+    for(let i=0;i<j.nt;i++){const px=-w*.95+1.9*w*i/(j.nt-1);wave(x,px,R*.04,R*j.tl*(.8+.4*((i*13)%5)/5),R*.18,t,j.ph+i*.7,10);}
+    x.stroke();
+    // 입팔
+    x.lineWidth=Math.max(1,R*.07);x.lineCap='round';x.strokeStyle=`rgba(200,210,255,${.2*a})`;x.beginPath();
+    [-.22,-.07,.07,.22].forEach((o,k)=>wave(x,o*w,R*.06,R*1.15,R*.12,t,j.ph+k*1.3,12));x.stroke();
+    // 갓
+    x.globalCompositeOperation='lighter';
+    const bell=(s)=>{x.beginPath();x.moveTo(-w*s,0);x.bezierCurveTo(-w*s,-h*1.4*s,w*s,-h*1.4*s,w*s,0);x.quadraticCurveTo(0,h*.28*s,-w*s,0);x.closePath();};
+    let g=x.createRadialGradient(0,-h*.35,0,0,-h*.35,w*1.45);g.addColorStop(0,`rgba(120,140,255,${.22*a})`);g.addColorStop(1,'rgba(120,140,255,0)');
+    x.fillStyle=g;bell(1.35);x.fill();
+    g=x.createRadialGradient(0,-h*.55,w*.1,0,-h*.3,w*1.05);g.addColorStop(0,`rgba(235,240,255,${.5*a})`);g.addColorStop(.55,`rgba(165,180,255,${.22*a})`);g.addColorStop(1,`rgba(205,215,255,${.5*a})`);
+    x.fillStyle=g;bell(1);x.fill();
+    x.lineWidth=Math.max(.8,1.2*unit);x.strokeStyle=`rgba(225,232,255,${.3*a})`;x.stroke();
+    // 네 개의 고리
+    x.lineWidth=Math.max(.6,w*.024);x.strokeStyle=`rgba(240,244,255,${.3*a})`;
+    for(let k=0;k<4;k++){const an=k*Math.PI/2+.5;x.beginPath();x.arc(Math.cos(an)*w*.3,-h*.5+Math.sin(an)*h*.2,w*.105,0,6.28);x.stroke();}
+    x.restore();
+  }
+  function drawJellies(id,t){
+    const c=document.getElementById(id);const [x,W,H]=fit(c);
+    jellyBg(x,W,H,t);for(const j of jellies)drawJellyfish(x,j,W,H,t);
+  }
+
+  const sp=rng(3), specks=Array.from({length:40},()=>({x:sp(),y:sp(),r:.5+sp()*1.6,v:.00004+sp()*.00012,a:.2+sp()*.5}));
+  function drawSpecks(t){
+    const [x,W,H]=fit(document.getElementById('specks'));
+    x.clearRect(0,0,W,H);
+    for(const s of specks){const y=((s.y-(reduce?0:t*s.v))%1+1)%1;x.fillStyle=`rgba(200,215,255,${s.a})`;x.beginPath();x.arc(s.x*W+Math.sin(t*.0005+s.y*9)*6,y*H,s.r,0,6.28);x.fill();}
+  }
+
+  // 스크롤 전환: 다음 레이어가 아래에서 부드럽게 번지며 올라오고 살짝 줌아웃
+  const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+  let p=0, base=0;
+  function layout(){
+    p=deck.scrollTop/(deck.clientHeight||1);
+    base=Math.min(layers.length-1,Math.max(0,Math.floor(p)));
+    const f=Math.min(1,Math.max(0,p-base));
+    layers.forEach((L,i)=>{
+      let show=false,mask='none',scale=1,op=1;
+      if(i===base){show=true;scale=reduce?1:1+.06*f;}
+      else if(i===base+1&&f>0){
+        show=true;const e=ease(f);
+        if(reduce)op=e;else{const edge=-30+e*160;mask=`linear-gradient(to top,#000 ${edge-30}%,rgba(0,0,0,.6) ${edge-12}%,transparent ${edge}%)`;scale=1.12-.12*e;}
+      }
+      L.style.visibility=show?'visible':'hidden';L.style.zIndex=i===base?1:2;L.style.opacity=op;
+      L.style.transform=`scale(${scale})`;L.style.webkitMaskImage=mask;L.style.maskImage=mask;
+    });
+    copies.forEach((c,i)=>{
+      const d=Math.max(-1,Math.min(1,i-p));
+      if(reduce){c.style.opacity=1-Math.abs(d)*.6;return;}
+      c.style.transform=`translateY(${d*80}px)`;c.style.opacity=String(Math.max(0,1-Math.abs(d)*1.5));
+    });
+    const k=Math.round(p);[...dots.children].forEach((d,i)=>d.classList.toggle('on',i===k));
+  }
+  function visible(i){return i===base||(i===base+1&&p>base);}
+  function loop(t){
+    if(visible(0))drawJellies('jelly0',t);
+    if(visible(1)){drawJellies('jelly1',t);drawSpecks(t);}
+    if(visible(2))drawWine(t);
+    if(visible(3))drawBokeh(t);
+    if(!reduce)requestAnimationFrame(loop);
+  }
+  let tick=false;
+  deck.addEventListener('scroll',()=>{if(!tick){tick=true;requestAnimationFrame(()=>{layout();tick=false;if(reduce)loop(0);});}},{passive:true});
+  addEventListener('resize',()=>{layout();if(reduce)loop(0);});
+  layout();
+  if(reduce){drawJellies('jelly0',0);drawJellies('jelly1',0);drawSpecks(0);drawWine(0);drawBokeh(0);}else requestAnimationFrame(loop);
+
+})();
+</script>
+
+</body>
+</html>
